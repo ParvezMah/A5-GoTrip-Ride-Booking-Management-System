@@ -42,6 +42,8 @@ const getAllUsers = async (query: Record<string, string>) => {
 };
 
 
+
+
 export const userServices = {
   createUser,
   getAllUsers
