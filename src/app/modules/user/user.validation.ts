@@ -48,4 +48,38 @@ export const createUserZodSchema = z.object({
     auths: z.array(authProviderSchema).optional(),
   });
 
+  export const updateUserZodSchema = z.object({
+ 
+    name: z.string().min(2).max(50).optional(),
+
+    email: z.string().email().optional(),
+
+    password: z
+      .string()
+      .min(8)
+      .regex(/(?=.*[A-Z])/)
+      .regex(/(?=.*[!@#$%^&*])/)
+      .regex(/(?=.*\d)/)
+      .optional(),
+
+    phone: z
+      .string()
+      .regex(/^(?:\+8801\d{9}|01\d{9})$/, {
+        message:
+          "Phone number must be valid for Bangladesh. Format: +8801XXXXXXXXX or 01XXXXXXXXX",
+      })
+      .optional(),
+
+    role: z.nativeEnum(Role).optional(),
+   
+    isDeleted: z.boolean().optional(),
+
+    status: z.nativeEnum(UserStatus).optional(),
+
+    picture: z.string().url().optional(),
+    address: z.string().max(200).optional(),
+    location: locationSchema.optional(),
+    auths: z.array(authProviderSchema).optional(),
+  });
+
 
