@@ -41,7 +41,7 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
             throw new AppError(403, "You Are Not Permitted To View This Route ")
         }
 
-        req.user = verifiedToken
+        req.user = verifiedToken // console here
 
         next()
     } catch (error) {
