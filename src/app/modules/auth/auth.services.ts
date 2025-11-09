@@ -3,8 +3,8 @@ import AppError from "../../errorHelper.ts/ApiError";
 import { IUser } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status";
-import jwt from 'jsonwebtoken';
 import { envVars } from '../../config/env';
+import { generateToken } from '../../utils/jwt';
 
 
 const credentialsLogin = async(payload: Partial<IUser>) => {
@@ -30,7 +30,7 @@ const credentialsLogin = async(payload: Partial<IUser>) => {
     }
 
     // create AccessToken
-    const accessToken = jwt.sign(jwtPawload, envVars.JWT_ACCESS_SECRET)
+    const accessToken = generateToken(jwtPawload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
 
     return {
         accessToken
