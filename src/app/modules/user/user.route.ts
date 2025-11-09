@@ -8,7 +8,7 @@ import { Role } from "./user.interface";
 const router = Router();
 
 router.get("/all-users", 
-  // checkAuth(Role.ADMIN), 
+  checkAuth(Role.ADMIN), 
   userControllers.getAllUsers
 );
 

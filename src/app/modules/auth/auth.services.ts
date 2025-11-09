@@ -3,6 +3,8 @@ import AppError from "../../errorHelper.ts/ApiError";
 import { IUser } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status";
+import jwt from 'jsonwebtoken';
+import { envVars } from '../../config/env';
 
 
 const credentialsLogin = async(payload: Partial<IUser>) => {
@@ -20,8 +22,18 @@ const credentialsLogin = async(payload: Partial<IUser>) => {
         throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password");
     }
 
-    return {
+    // Creating AccessToken during login is optional
+    const jwtPawload = {
         email: isUserExist.email,
+        userId: isUserExist._id,
+        role: isUserExist.role
+    }
+
+    // create AccessToken
+    const accessToken = jwt.sign(jwtPawload, envVars.JWT_ACCESS_SECRET)
+
+    return {
+        accessToken
     }
 }
 
