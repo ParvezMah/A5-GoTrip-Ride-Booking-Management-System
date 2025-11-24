@@ -6,11 +6,12 @@ import notFound from "./app/middlewares/notFound";
 import cookieParser from "cookie-parser";
 import expressSession from "express-session";
 import passport from "passport";
+import { envVars } from "./app/config/env";
 const app = express()
 
 
 app.use(expressSession({ // Use express-session middleware before passport.session()
-    secret: "Your secret",
+    secret: envVars.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
 })); 
