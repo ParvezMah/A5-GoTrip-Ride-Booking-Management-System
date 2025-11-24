@@ -9,7 +9,8 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AuthServices } from "./auth.services";
 import AppError from "../../errorHelper.ts/ApiError";
 import { setTokensToCookie } from "../../utils/setTokensToCookie";
-
+import { envVars } from "../../config/env";
+import { createUserTokens } from "../../utils/userTokens";
 
 // const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
@@ -136,9 +137,28 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
     })
 })
 
+const googleCallbackController = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const user = req.user;
+    console.log("googleCallbackController : ", user);
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
+    }
+
+    const tokenInfo = createUserTokens(user)
+
+    setTokensToCookie(res, tokenInfo)
+
+    // res.redirect(`${envVars.FRONTEND_URL}/booking`)
+    res.redirect(envVars.FRONTEND_URL)
+})
+
+
 export const AuthControllers = {
     credentialsLogin,
     getNewAccessToken,
     logout,
-    resetPassword
+    resetPassword,
+    googleCallbackController
 }
