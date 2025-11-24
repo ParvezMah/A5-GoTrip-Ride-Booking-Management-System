@@ -1,0 +1,137 @@
+import { Driver } from "./driver.model";
+import httpStatus from "http-status";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { IDriver } from "./driver.interface";
+import ApiError from "../../errorHelper/ApiError";
+
+const createDriver = async (payload: Partial<IDriver>) => {  
+    const isDriverExist = await Driver.findOne({ userId: payload.userId });
+    if (isDriverExist) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Driver already exists");
+    }
+
+    const driver = await Driver.create(payload);
+    return driver;
+};
+
+const getAllDrivers = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Driver.find(), query);
+    const driverData = queryBuilder.filter().search([]).sort().fields().paginate();
+
+    const [data, meta] = await Promise.all([
+        driverData.build(),
+        queryBuilder.getMeta(),
+    ]);
+
+    return { data, meta };
+};
+
+const getSingleDriver = async (id: string) => {
+    const driver = await Driver.findById(id);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+    return driver;
+};
+
+const updateDriver = async (id: string, payload: Partial<IDriver>) => {
+    const driver = await Driver.findByIdAndUpdate(id, payload, {
+        new: true,
+        runValidators: true,
+    });
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+    return driver;
+};
+
+const deleteDriver = async (id: string) => {
+    const driver = await Driver.findByIdAndDelete(id);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+    return driver;
+};
+
+const getDriverByUserId = async (userId: string) => {
+    const driver = await Driver.findOne({ userId });
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found by userId");
+    }
+    return driver;
+};
+const updateOnlineStatus = async (driverId: string, onlineStatus: 'Active' | 'Offline') => {
+    const driver = await Driver.findById(driverId);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+
+    driver.onlineStatus = onlineStatus;
+    await driver.save();
+    return driver;
+};
+
+const updateRidingStatus = async (
+    driverId: string,
+    ridingStatus: 'idle' | 'waiting_for_pickup' | 'in_transit' | 'unavailable'
+) => {
+    const driver = await Driver.findById(driverId);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+
+    driver.ridingStatus = ridingStatus;
+    await driver.save();
+    return driver;
+};
+
+const updateLocation = async (driverId: string, location: { lat: number; lng: number }) => {
+    const driver = await Driver.findById(driverId);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+
+    if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid location data");
+    }
+
+    driver.location = location;
+    await driver.save();
+    return driver;
+};
+
+const updateDriverStatus = async (
+  driverId: string,
+  status: 'Approved' | 'Pending' | 'Suspended'
+) => {
+  const driver = await Driver.findById(driverId);
+  if (!driver) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+  }
+
+  // Only allowed values (extra safety)
+  const allowedStatus = ["Approved", "Pending", "Suspended"];
+  if (!allowedStatus.includes(status)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid driver status");
+  }
+
+  driver.status = status;
+  await driver.save();
+
+  return driver;
+};
+
+
+
+export const DriverService = {
+    createDriver,
+    getAllDrivers,
+    getSingleDriver,
+    updateDriver,
+    deleteDriver,
+    getDriverByUserId,
+    updateOnlineStatus,
+    updateRidingStatus,
+    updateLocation,
+    updateDriverStatus
+};
