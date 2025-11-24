@@ -6,8 +6,8 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from 'http-status';
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { authServices } from "./auth.services";
-
+import { AuthServices } from "./auth.services";
+import AppError from "../../errorHelper.ts/ApiError";
 
 
 // const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -57,18 +57,38 @@ import { authServices } from "./auth.services";
 //         })
 //     })(req, res, next) 
 // })
+
 const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    
-    const loginInfo = await authServices.credentialsLogin(req.body);
+
+    const loginInfo = await AuthServices.credentialsLogin(req.body);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "User Logged In Successfully",
         data: loginInfo
     })
+});
+
+const getNewAccessToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+    console.log("refreshToken : ", refreshToken)
+    if (!refreshToken) {
+        throw new AppError(httpStatus.BAD_REQUEST, "No refresh token recieved from cookies")
+    }
+    const tokenInfo = await AuthServices.getNewAccessToken(refreshToken as string)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "New Access Token Retrived Successfully",
+        data: tokenInfo,
+    })
 })
 
 
+
+
 export const AuthControllers = {
-    credentialsLogin
+    credentialsLogin,
+    getNewAccessToken
 }

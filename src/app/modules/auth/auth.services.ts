@@ -5,10 +5,12 @@ import { IUser } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status";
 import { envVars } from '../../config/env';
-import { generateToken } from '../../utils/jwt';
+import { generateToken, verifyToken } from '../../utils/jwt';
+import { JwtPayload } from 'jsonwebtoken';
+import { createNewAccessTokenWithRefreshToken } from '../../utils/userTokens';
 
 
-const credentialsLogin = async(payload: Partial<IUser>) => {
+const credentialsLogin = async (payload: Partial<IUser>) => {
     const { email, password } = payload;
 
     const isUserExist = await User.findOne({ email });
@@ -35,7 +37,7 @@ const credentialsLogin = async(payload: Partial<IUser>) => {
     const refreshToken = generateToken(jwtPawload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES)
 
     // Hide password before sending the user object
-    const {password: pass, ...rest}=isUserExist
+    const { password: pass, ...rest } = isUserExist
 
     return {
         accessToken,
@@ -44,6 +46,17 @@ const credentialsLogin = async(payload: Partial<IUser>) => {
     }
 }
 
-export const authServices = {
-    credentialsLogin
+const getNewAccessToken = async (refreshToken: string) => {
+    const newAccessToken = await createNewAccessTokenWithRefreshToken(refreshToken)
+
+    return {
+        accessToken: newAccessToken
+    }
+
+}
+
+
+export const AuthServices = {
+    credentialsLogin,
+    getNewAccessToken
 }
