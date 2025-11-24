@@ -17,10 +17,7 @@ const createUser = async (payload: Partial<IUser>) => {
     throw new AppError(httpStatus.BAD_REQUEST, "User Already Exists");
   }
 
-  const hashedPassword = await bcryptjs.hash(
-    password as string,
-    Number(envVars.BCRYPT_SALT_ROUND)
-  );
+  const hashedPassword = await bcryptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND));
 
   const authProvider: IAuthProvider = {
     provider: "credentials",
@@ -37,11 +34,14 @@ const createUser = async (payload: Partial<IUser>) => {
   return user;
 };
 
-const getAllUsers = async (query: Record<string, string>) => {
-  const users = await User.find();
-
+const getAllUsers = async () => {
+  const users = await User.find({});
+  const totalUsers = await User.countDocuments();
   return {
     data: users,
+    meta: {
+      total: totalUsers,
+    },
   };
 };
 
@@ -51,20 +51,10 @@ const updateUser = async (
   decodedToken: JwtPayload
 ) => {
   const ifUserExist = await User.findById(userId);
-
-  // new
-  if (decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
-    if (userId !== decodedToken.userId) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        "You are not authorized to update another user's profile"
-      );
-    }
-  }
-
   if (!ifUserExist) {
     throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
   }
+
 
   if (payload?.role) {
     if (decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {

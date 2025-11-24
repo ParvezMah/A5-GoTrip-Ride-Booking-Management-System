@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import bcryptjs from 'bcryptjs';
 import AppError from "../../errorHelper.ts/ApiError";
 import { IUser } from "../user/user.interface"
@@ -31,9 +32,15 @@ const credentialsLogin = async(payload: Partial<IUser>) => {
 
     // create AccessToken
     const accessToken = generateToken(jwtPawload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
+    const refreshToken = generateToken(jwtPawload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES)
+
+    // Hide password before sending the user object
+    const {password: pass, ...rest}=isUserExist
 
     return {
-        accessToken
+        accessToken,
+        refreshToken,
+        user: rest
     }
 }
 
