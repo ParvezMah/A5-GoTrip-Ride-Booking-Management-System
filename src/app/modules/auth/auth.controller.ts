@@ -8,6 +8,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { AuthServices } from "./auth.services";
 import AppError from "../../errorHelper.ts/ApiError";
+import { setTokensToCookie } from "../../utils/setTokensToCookie";
 
 
 // const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -62,15 +63,17 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
 
     const loginInfo = await AuthServices.credentialsLogin(req.body);
     
-    res.cookie("accessToken", loginInfo.accessToken, {
-        httpOnly: true, // httpOnly: true This makes the cookie inaccessible to JavaScript running in the browser (it can't be read or modified by document.cookie). Purpose: Helps protect against XSS (Cross-Site Scripting) attacks.
-        secure: false, // secure: false This means the cookie will be sent over both HTTP and HTTPS connections. Purpose: In development, you often use secure: false because you may not have HTTPS locally. In production, you should set secure: true so the cookie is only sent over HTTPS, making it more secure.
-    })
+    // res.cookie("accessToken", loginInfo.accessToken, {
+    //     httpOnly: true, // httpOnly: true This makes the cookie inaccessible to JavaScript running in the browser (it can't be read or modified by document.cookie). Purpose: Helps protect against XSS (Cross-Site Scripting) attacks.
+    //     secure: false, // secure: false This means the cookie will be sent over both HTTP and HTTPS connections. Purpose: In development, you often use secure: false because you may not have HTTPS locally. In production, you should set secure: true so the cookie is only sent over HTTPS, making it more secure.
+    // })
     
-    res.cookie("refreshToken", loginInfo.refreshToken, {
-        httpOnly: true, // httpOnly: true This makes the cookie inaccessible to JavaScript running in the browser (it can't be read or modified by document.cookie). Purpose: Helps protect against XSS (Cross-Site Scripting) attacks.
-        secure: false, // secure: false This means the cookie will be sent over both HTTP and HTTPS connections. Purpose: In development, you often use secure: false because you may not have HTTPS locally. In production, you should set secure: true so the cookie is only sent over HTTPS, making it more secure.
-    })
+    // res.cookie("refreshToken", loginInfo.refreshToken, {
+    //     httpOnly: true, // httpOnly: true This makes the cookie inaccessible to JavaScript running in the browser (it can't be read or modified by document.cookie). Purpose: Helps protect against XSS (Cross-Site Scripting) attacks.
+    //     secure: false, // secure: false This means the cookie will be sent over both HTTP and HTTPS connections. Purpose: In development, you often use secure: false because you may not have HTTPS locally. In production, you should set secure: true so the cookie is only sent over HTTPS, making it more secure.
+    // })
+
+    setTokensToCookie(res, loginInfo)
 
     sendResponse(res, {
         success: true,
