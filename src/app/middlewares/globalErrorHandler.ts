@@ -8,6 +8,9 @@ import { TErrorSources } from "../interfaces/error.types";
 
 export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
 
+    const errorSource: any = [
+    ]
+
     // Development logging
     if (envVars.NODE_ENV === "development") {
         console.log(err);
@@ -29,6 +32,17 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
     else if (err.name === "CastError") {
         statusCode = 400;
         message = "Invalid MongoDB ObjectId. Please provide a valid Id"
+    }
+    // Validation error
+    else if (err.name === "ValidationError") {
+        statusCode = 400;
+        const errors = Object.values(err.errors);
+
+        errors.forEach((errorObject: any) => errorSource.push({
+            path: errorObject.path,
+            message: errorObject.message
+        }))
+        message = "Validation Error Occurred"
     }
     else if (err instanceof AppError) {
         statusCode = err.statusCode;
