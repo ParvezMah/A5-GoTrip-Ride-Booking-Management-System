@@ -20,7 +20,8 @@ router.post(
 
 router.patch(
   "/:id",
-  validateRequest(updateUserZodSchema),
+  validateRequest(updateUserZodSchema), // to validate data before update user information
+  checkAuth(...Object.values(Role)), // Role based authenticated : every role can update user information
   userControllers.updateUser
 );
 
