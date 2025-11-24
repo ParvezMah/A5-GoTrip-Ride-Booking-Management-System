@@ -10,41 +10,41 @@ import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
-    const { email, password } = payload;
+// const credentialsLogin = async (payload: Partial<IUser>) => {
+//     const { email, password } = payload;
 
-    const isUserExist = await User.findOne({ email });
+//     const isUserExist = await User.findOne({ email });
 
-    if (!isUserExist) {
-        throw new AppError(httpStatus.BAD_REQUEST, "Email Does Not Exist");
-    }
+//     if (!isUserExist) {
+//         throw new AppError(httpStatus.BAD_REQUEST, "Email Does Not Exist");
+//     }
 
-    const isPasswordMatched = await bcryptjs.compare(password as string, isUserExist.password as string);
+//     const isPasswordMatched = await bcryptjs.compare(password as string, isUserExist.password as string);
 
-    if (!isPasswordMatched) {
-        throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password");
-    }
+//     if (!isPasswordMatched) {
+//         throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password");
+//     }
 
-    // Creating AccessToken during login is optional
-    const jwtPawload = {
-        email: isUserExist.email,
-        userId: isUserExist._id,
-        role: isUserExist.role
-    }
+//     // Creating AccessToken during login is optional
+//     const jwtPawload = {
+//         email: isUserExist.email,
+//         userId: isUserExist._id,
+//         role: isUserExist.role
+//     }
 
-    // create AccessToken
-    const accessToken = generateToken(jwtPawload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
-    const refreshToken = generateToken(jwtPawload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES)
+//     // create AccessToken
+//     const accessToken = generateToken(jwtPawload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
+//     const refreshToken = generateToken(jwtPawload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES)
 
-    // Hide password before sending the user object
-    const { password: pass, ...rest } = isUserExist
+//     // Hide password before sending the user object
+//     const { password: pass, ...rest } = isUserExist
 
-    return {
-        accessToken,
-        refreshToken,
-        user: rest
-    }
-}
+//     return {
+//         accessToken,
+//         refreshToken,
+//         user: rest
+//     }
+// }
 
 const getNewAccessToken = async (refreshToken: string) => {
     const newAccessToken = await createNewAccessTokenWithRefreshToken(refreshToken)
@@ -71,7 +71,7 @@ const resetPassword = async (oldPassword: string, newPassword: string, decodedTo
 
 
 export const AuthServices = {
-    credentialsLogin,
+    // credentialsLogin,
     getNewAccessToken,
     resetPassword
 }
