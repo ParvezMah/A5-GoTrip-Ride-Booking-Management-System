@@ -5,11 +5,16 @@ import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
 import AppError from "../errorHelper.ts/ApiError";
 import { TErrorSources } from "../interfaces/error.types";
+import { handleCastError } from "../helpers/handleCastError";
+import { handleDuplicateError } from "../helpers/handleDuplicateError";
+import { handleValidationError } from "../helpers/handleValidationError";
+import { handleZodError } from "../helpers/handleZodError";
 
 export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
 
-    const errorSource: any = [
-    ]
+    let errorSources: TErrorSources[] = []
+    let statusCode = 500
+    let message = "Something Went Wrong!!"
 
     // Development logging
     if (envVars.NODE_ENV === "development") {
@@ -17,32 +22,30 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
     }
 
 
-    // Initialize default error response values
-    const errorSources: TErrorSources[] = []
-    let statusCode = 500
-    let message = "Something Went Wrong!!"
-
     //Duplicate error
     if (err.code === 11000) {
-        const matchedArray = err.message.match(/"([^"]*)"/)
-        statusCode = 400;
-        message = `${matchedArray[1]} Already Exist`
+        const simplifiedError = handleDuplicateError(err)
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message
     }
-    // Cast Error - ObjectId error
+    // Object ID error / Cast Error
     else if (err.name === "CastError") {
-        statusCode = 400;
-        message = "Invalid MongoDB ObjectId. Please provide a valid Id"
+        const simplifiedError = handleCastError(err)
+        statusCode = simplifiedError.statusCode;
+        message = simplifiedError.message
     }
-    // Validation error
+    else if (err.name === "ZodError") {
+        const simplifiedError = handleZodError(err)
+        statusCode = simplifiedError.statusCode
+        message = simplifiedError.message
+        errorSources = simplifiedError.errorSources as TErrorSources[]
+    }
+    //Mongoose Validation Error
     else if (err.name === "ValidationError") {
-        statusCode = 400;
-        const errors = Object.values(err.errors);
-
-        errors.forEach((errorObject: any) => errorSource.push({
-            path: errorObject.path,
-            message: errorObject.message
-        }))
-        message = "Validation Error Occurred"
+        const simplifiedError = handleValidationError(err)
+        statusCode = simplifiedError.statusCode;
+        errorSources = simplifiedError.errorSources as TErrorSources[]
+        message = simplifiedError.message
     }
     else if (err instanceof AppError) {
         statusCode = err.statusCode;
