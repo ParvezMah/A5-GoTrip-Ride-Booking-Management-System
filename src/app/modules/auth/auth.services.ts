@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import bcryptjs from 'bcryptjs';
-import AppError from "../../errorHelper.ts/ApiError";
-import { IUser } from "../user/user.interface"
-import { User } from "../user/user.model";
 import httpStatus from "http-status";
-import { envVars } from '../../config/env';
-import { generateToken, verifyToken } from '../../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
+import { envVars } from '../../config/env';
+import AppError from "../../errorHelper.ts/ApiError";
+import { generateToken } from '../../utils/jwt';
 import { createNewAccessTokenWithRefreshToken } from '../../utils/userTokens';
+import { IUser } from "../user/user.interface";
+import { User } from "../user/user.model";
 
 
 const credentialsLogin = async (payload: Partial<IUser>) => {

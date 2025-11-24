@@ -11,6 +11,7 @@ import AppError from "../../errorHelper.ts/ApiError";
 import { setTokensToCookie } from "../../utils/setTokensToCookie";
 import { envVars } from "../../config/env";
 import { createUserTokens } from "../../utils/userTokens";
+import { JwtPayload } from "jsonwebtoken";
 
 // const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
@@ -127,7 +128,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
     const oldPassword = req.body.oldPassword;
     const decodedToken = req.user
 
-    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken);
+    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken as JwtPayload);
 
     sendResponse(res, {
         success: true,
@@ -138,7 +139,13 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
 })
 
 const googleCallbackController = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    let redirectTo = req.query.state ? req.query.state as string : ""
 
+    if (redirectTo.startsWith("/")) {
+        redirectTo = redirectTo.slice(1)
+    }
+
+    // /booking => booking , => "/" => ""
     const user = req.user;
     console.log("googleCallbackController : ", user);
 
@@ -151,8 +158,7 @@ const googleCallbackController = catchAsync(async (req: Request, res: Response, 
     setTokensToCookie(res, tokenInfo)
 
     // res.redirect(`${envVars.FRONTEND_URL}/booking`)
-    res.redirect(envVars.FRONTEND_URL)
-})
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)})
 
 
 export const AuthControllers = {
