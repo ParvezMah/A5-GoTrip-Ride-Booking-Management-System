@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import expressSession from "express-session";
 import passport from "passport";
 import { envVars } from "./app/config/env";
+import cors from "cors";
 const app = express()
 
 
@@ -21,7 +22,12 @@ app.use(passport.session()); // If using sessions, initialize session support
 app.use(cookieParser())
 app.use(express.json()) // for parsing application/json 
 app.use(express.urlencoded({ extended: true }))
+app.set("trust proxy", 1) // Trust proxy for secure cookies
 
+app.use(cors({
+    origin : envVars.FRONTEND_URL,
+    credentials : true 
+}))
 
 
 app.get("/", (req: Request, res: Response) => {

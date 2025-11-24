@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import bcryptjs from "bcryptjs";
 import httpStatus from "http-status";
-import AppError from "../../errorHelper.ts/ApiError";
+import AppError from "../../errorHelper/ApiError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import { envVars } from "../../config/env";

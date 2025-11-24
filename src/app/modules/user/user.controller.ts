@@ -31,7 +31,6 @@ const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFun
     })
 })
 
-
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const UserId = req.params.id;
     const payload = req.body;

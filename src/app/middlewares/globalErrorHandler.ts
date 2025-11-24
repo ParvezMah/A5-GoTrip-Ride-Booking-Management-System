@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
-import AppError from "../errorHelper.ts/ApiError";
+import AppError from "../errorHelper/ApiError";
 import { TErrorSources } from "../interfaces/error.types";
 import { handleCastError } from "../helpers/handleCastError";
 import { handleDuplicateError } from "../helpers/handleDuplicateError";
@@ -11,6 +11,16 @@ import { handleValidationError } from "../helpers/handleValidationError";
 import { handleZodError } from "../helpers/handleZodError";
 
 export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
+
+
+    /* for cloudinary
+
+
+
+
+
+
+    */
 
     let errorSources: TErrorSources[] = []
     let statusCode = 500

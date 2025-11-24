@@ -11,9 +11,7 @@ let server: Server;
 const startServer = async () => {
     try {
         await mongoose.connect(envVars.DB_URL)
-
         console.log("Connected to DB!!");
-
         server = app.listen(envVars.PORT, () => {
             console.log(`Server is listening to port ${envVars.PORT}`);
         });
@@ -51,7 +49,6 @@ process.on("SIGINT", () => {
 
     process.exit(1)
 })
-
 
 process.on("unhandledRejection", (err) => {
     console.log("Unhandled Rejecttion detected... Server shutting down..", err);

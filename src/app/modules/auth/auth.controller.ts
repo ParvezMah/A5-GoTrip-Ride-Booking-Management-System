@@ -7,7 +7,7 @@ import httpStatus from 'http-status';
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { AuthServices } from "./auth.services";
-import AppError from "../../errorHelper.ts/ApiError";
+import AppError from "../../errorHelper/ApiError";
 import { setTokensToCookie } from "../../utils/setTokensToCookie";
 import { envVars } from "../../config/env";
 import { createUserTokens } from "../../utils/userTokens";
