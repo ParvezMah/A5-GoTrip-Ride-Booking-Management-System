@@ -50,7 +50,7 @@ const suspendDriver = async (driverId: string) => {
     await driver.save();
 
     // Optional: Downgrade user role to 'USER'
-    await User.findByIdAndUpdate(driver.userId, { role: "USER" });
+    // await User.findByIdAndUpdate(driver.userId, { role: "USER" });
 
     return driver;
 };
@@ -163,7 +163,24 @@ const approveDriverStatus = async (
     driver.status = status;
     await driver.save();
 
+    // Update the user's role to 'DRIVER' if userId exists
+    if (driver.userId) {
+        await User.findByIdAndUpdate(driver.userId, { role: "DRIVER" });
+    }
+
     return driver;
+};
+
+const getMyProfile = async (driverId: string) => {
+  return await Driver.findOne({userId:driverId})
+};
+
+const updateMyProfile = async (driverId: string, payload: any) => {
+  return await Driver.findOneAndUpdate(
+    { userId: driverId },
+    { $set: payload },   
+    { new: true }
+  );
 };
 
 
@@ -180,5 +197,7 @@ export const DriverService = {
     updateOnlineStatus,
     updateRidingStatus,
     updateLocation,
-    approveDriverStatus
+    approveDriverStatus,
+    getMyProfile,
+    updateMyProfile
 };

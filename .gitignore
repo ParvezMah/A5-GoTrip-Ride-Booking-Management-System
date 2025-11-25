@@ -88,3 +88,4 @@ pnpm-lock.yaml
 # Next.js / React
 .next/
 out/
+.vercel

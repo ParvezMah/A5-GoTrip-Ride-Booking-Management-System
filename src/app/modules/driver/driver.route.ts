@@ -16,9 +16,19 @@ router.get("/",
 );
 
 // Get single driver by ID (admin, super admin, or the driver themself) ✅
-router.get(":id",
+router.get("/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DRIVER),
   DriverControllers.getSingleDriver
+);
+
+router.get("/me", checkAuth(Role.DRIVER), 
+DriverControllers.getMyProfile);
+
+// Update current driver profile
+router.patch(
+  "/me",
+  checkAuth(Role.DRIVER),
+  DriverControllers.updateMyProfile
 );
 
 // Create Driver (admin or super admin only)
@@ -37,7 +47,7 @@ router.post("/apply",
 );
 
 // Update driver info (admin, super admin) ✅
-router.patch("/:id",
+router.patch("/update-driver/:id",
   checkAuth(Role.DRIVER),
   validateRequest(updateDriverZodSchema),
   DriverControllers.updateDriver
@@ -50,29 +60,29 @@ router.delete("/:id",
 );
 
 // Update online status (driver only) ✅
-router.patch("/:id/online-status",
+router.patch("/online-status/:id",
   checkAuth(Role.DRIVER),
   DriverControllers.updateOnlineStatus 
 );
 
 // Update riding status (driver only) ✅
-router.patch("/:id/riding-status",
+router.patch("/riding-status/:id",
   checkAuth(Role.DRIVER),
   DriverControllers.updateRidingStatus
 );
 
 // Update driver's current location (driver only) ✅
-router.patch("/:id/location",
+router.patch("/location/:id",
   checkAuth(Role.DRIVER),
   DriverControllers.updateLocation
 );
 
-router.patch("/:id/approve-status",
+router.patch("/approve-status/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   DriverControllers.approveDriverStatus
 );
 
-router.patch('/:id/suspend', checkAuth(Role.ADMIN), DriverControllers.suspendDriver);
+router.patch('/suspend/:id', checkAuth(Role.ADMIN), DriverControllers.suspendDriver);
 
 
 export const DriverRoutes = router;
