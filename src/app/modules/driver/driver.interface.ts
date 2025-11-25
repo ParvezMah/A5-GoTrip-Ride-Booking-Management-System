@@ -15,7 +15,7 @@ location?: {
 };
 
   onlineStatus?: 'Active' | 'Offline';
-  ridingStatus?: "idle" | 'waiting_for_pickup' | 'in_transit' | 'Complete';
+  ridingStatus?: "idle" | 'waiting_for_pickup' | 'in_transit' | 'Complete' | 'unavailable';
   isOnRide?: boolean;
   totalEarning?: number;
 

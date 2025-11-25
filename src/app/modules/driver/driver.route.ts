@@ -30,7 +30,7 @@ router.post("/create-driver",
 );
 
 router.post("/apply",
-  checkAuth(Role.RIDER),
+  checkAuth(Role.RIDER),  // rider can apply as driver
   multerUpload.array("file"),
   validateRequest(createDriverZodSchema),
   DriverControllers.applyAsDriver
@@ -38,14 +38,14 @@ router.post("/apply",
 
 // Update driver info (admin, super admin) ✅
 router.patch("/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN,Role.DRIVER),
+  checkAuth(Role.DRIVER),
   validateRequest(updateDriverZodSchema),
   DriverControllers.updateDriver
 );
 
 // Delete a driver (super admin only)
 router.delete("/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.DRIVER),
   DriverControllers.deleteDriver
 );
 
@@ -56,18 +56,18 @@ router.patch("/:id/online-status",
 );
 
 // Update riding status (driver only) ✅
-router.patch(":id/riding-status",
+router.patch("/:id/riding-status",
   checkAuth(Role.DRIVER),
   DriverControllers.updateRidingStatus
 );
 
 // Update driver's current location (driver only) ✅
-router.patch(":id/location",
+router.patch("/:id/location",
   checkAuth(Role.DRIVER),
   DriverControllers.updateLocation
 );
 
-router.patch(":id/approve-status",
+router.patch("/:id/approve-status",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   DriverControllers.approveDriverStatus
 );

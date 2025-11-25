@@ -5,7 +5,7 @@ import { IDriver } from "./driver.interface";
 import ApiError from "../../errorHelper/ApiError";
 import { User } from "../user/user.model";
 
-const createDriver = async (payload: Partial<IDriver>) => {  
+const createDriver = async (payload: Partial<IDriver>) => {
     const isDriverExist = await Driver.findOne({ userId: payload.userId });
     if (isDriverExist) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Driver already exists");
@@ -16,43 +16,43 @@ const createDriver = async (payload: Partial<IDriver>) => {
 };
 
 const applyAsDriver = async (user: any, payload: IDriver) => {
-  // Check if user has already applied
-  const existing = await Driver.findOne({ userId: user.userId });
-  if (existing) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You have already applied as a driver");
-  }
+    // Check if user has already applied
+    const existing = await Driver.findOne({ userId: user.userId });
+    if (existing) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "You have already applied as a driver");
+    }
 
-  const driverData = {
-    ...payload,
-    userId: user.userId,
-    status: "Pending", // initially pending
-  };
+    const driverData = {
+        ...payload,
+        userId: user.userId,
+        status: "Pending", // initially pending
+    };
 
-  // console.log(driverData)
+    // console.log(driverData)
 
-  const newDriver = await Driver.create(driverData);
-  return newDriver;
+    const newDriver = await Driver.create(driverData);
+    return newDriver;
 };
 
 const suspendDriver = async (driverId: string) => {
-  const driver = await Driver.findById(driverId);
+    const driver = await Driver.findById(driverId);
 
-  if (!driver) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
-  }
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
 
-  if (driver.status === "Suspended") {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Driver is already suspended");
-  }
+    if (driver.status === "Suspended") {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Driver is already suspended");
+    }
 
-  // Update the driver status to 'Suspended'
-  driver.status = "Suspended";
-  await driver.save();
+    // Update the driver status to 'Suspended'
+    driver.status = "Suspended";
+    await driver.save();
 
-  // Optional: Downgrade user role to 'USER'
-  await User.findByIdAndUpdate(driver.userId, { role: "USER" });
+    // Optional: Downgrade user role to 'USER'
+    await User.findByIdAndUpdate(driver.userId, { role: "USER" });
 
-  return driver;
+    return driver;
 };
 
 const getAllDrivers = async (query: Record<string, string>) => {
@@ -136,30 +136,34 @@ const updateLocation = async (driverId: string, location: { lat: number; lng: nu
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid location data");
     }
 
-    driver.location = location;
+    // driver.location = location;
+    driver.location = {
+        type: "Point",
+        coordinates: [location.lng, location.lat], // GeoJSON requires [lng, lat]
+    };
     await driver.save();
     return driver;
 };
 
 const approveDriverStatus = async (
-  driverId: string,
-  status: 'Approved' | 'Pending' | 'Suspended'
+    driverId: string,
+    status: 'Approved' | 'Pending' | 'Suspended'
 ) => {
-  const driver = await Driver.findById(driverId);
-  if (!driver) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
-  }
+    const driver = await Driver.findById(driverId);
+    if (!driver) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
 
-  // Only allowed values (extra safety)
-  const allowedStatus = ["Approved", "Pending", "Suspended"];
-  if (!allowedStatus.includes(status)) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid driver status");
-  }
+    // Only allowed values (extra safety)
+    const allowedStatus = ["Approved", "Pending", "Suspended"];
+    if (!allowedStatus.includes(status)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid driver status");
+    }
 
-  driver.status = status;
-  await driver.save();
+    driver.status = status;
+    await driver.save();
 
-  return driver;
+    return driver;
 };
 
 

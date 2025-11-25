@@ -9,51 +9,40 @@ const userSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
     },
-
     password: {
       type: String,
-      required: true,
-
     },
-
     role: {
       type: String,
       enum: Object.values(Role),
       default: Role.RIDER,
     },
-
     isVerified: {
       type: Boolean,
       default: true,
     },
-
     location: {
       lat: { type: Number },
       lng: { type: Number },
       address: { type: String },
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
     picture: {
       type: String,
       default: "", // Optional: provide a default avatar URL
     },
-
     phone: {
       type: String,
     },
-
     auths: [
       {
         provider: {
@@ -65,7 +54,6 @@ const userSchema = new Schema<IUser>(
         },
       },
     ],
-
     status: {
       type: String,
       enum: Object.values(UserStatus),

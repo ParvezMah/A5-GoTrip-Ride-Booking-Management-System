@@ -3,13 +3,13 @@ import { Role } from "../user/user.interface";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { RideControllers } from "./ride.controller";
-import { createRideZodSchema,  } from "./ride.validation";
+import { createRideZodSchema, updateRideZodSchema,  } from "./ride.validation";
 
 const router = Router();
 
 // Admin gets all rides
 router.get("/",
-  checkAuth(Role.RIDER,Role.DRIVER,Role.ADMIN, Role.SUPER_ADMIN),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   RideControllers.getAllRides
 );
 
@@ -30,6 +30,16 @@ router.get("/available",
   checkAuth(Role.DRIVER),
   RideControllers.getAvailableRides
 );
+// driver feedback
+router.post("/:rideId/driver-feedback", 
+  checkAuth(Role.DRIVER),
+  RideControllers.giveDriverFeedback);
+// rider feedback
+router.put(
+  "/:id/feedback",
+  checkAuth(Role.RIDER),  
+  RideControllers.giveRiderFeedback
+);
 
 // Driver views their rides
 router.get("/driver",
@@ -45,6 +55,12 @@ router.post("/request",
   checkAuth(Role.RIDER),
   validateRequest(createRideZodSchema),
   RideControllers.requestRide
+);
+
+router.patch(
+  "/:id/status",
+  validateRequest(updateRideZodSchema),
+  RideControllers.updateRideStatus
 );
 
 // Rider cancels a ride request   

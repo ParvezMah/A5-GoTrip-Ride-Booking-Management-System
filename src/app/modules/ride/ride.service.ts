@@ -4,7 +4,7 @@ import { IUser } from "../user/user.interface";
 import httpStatus from "http-status";
 import { RideModel } from "./ride.model";
 import { Driver } from "../driver/driver.model";
-import { IRide } from "./ride.interface";
+import { IDriverFeedback, IRide, IRiderFeedback, RideStatus } from "./ride.interface";
 import { Types } from "mongoose";
 import ApiError from "../../errorHelper/ApiError";
 import AppError from "../../errorHelper/ApiError";
@@ -70,10 +70,10 @@ const requestRide = async (riderId: string, rideData: Partial<IRide>) => {
         fare: rideData.fare || 0,
     });
 
-  return {
-    ride,
-    allAvailableDrivers,
-  };
+    return {
+        ride,
+        allAvailableDrivers,
+    };
 };
 
 // Driver accepts a ride
@@ -150,7 +150,20 @@ const getAvailableRides = async () => {
     return rides;
 };
 
+const rejectRide = async (rideId: string, driverId: string) => {
+    const ride = await RideModel.findById(rideId);
 
+    if (!ride) {
+        throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
+    }
+
+    if (ride.driverId?.toString() !== driverId) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            "You are not assigned to this ride"
+        );
+    }
+}
 
 // Driver marks pickup complete
 const pickUpRide = async (driverId: string, rideId: string) => {
@@ -215,6 +228,10 @@ const completeRide = async (driverId: string, rideId: string) => {
     const driverDoc = await Driver.findOne({ userId: driverId });
     if (driverDoc) {
         driverDoc.isOnRide = false;
+        // ✅ Initialize totalEarning if undefined
+        if (typeof driverDoc.totalEarning !== "number") {
+            driverDoc.totalEarning = 0;
+        }
         driverDoc.totalEarning += ride.fare || 0;
         await driverDoc.save();
     }
@@ -236,6 +253,129 @@ const getAllRides = async () => {
     return rides;
 };
 
+
+const getDriverEarnings = async (driverId: string) => {
+    const rides = await RideModel.find({
+        driverId,
+        rideStatus: "COMPLETED",
+    })
+        .sort({ completedAt: -1 })
+        .select("fare timestamps.completedAt riderId")
+        .populate("riderId", "name phoneNumber");
+
+    const totalEarnings = rides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+
+    return { totalEarnings, rideCount: rides.length, rides };
+};
+
+const giveRiderFeedback = async (
+    riderId: string,
+    rideId: string,
+    feedbackInput: IRiderFeedback
+) => {
+    const ride = await RideModel.findById(rideId);
+
+    if (!ride) {
+        throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
+    }
+
+    // Check if the rider owns this ride
+    if (!ride.riderId.equals(new Types.ObjectId(riderId))) {
+        throw new AppError(
+            httpStatus.FORBIDDEN,
+            "You can only give feedback on your own rides"
+        );
+    }
+
+    // Only allow feedback if ride is COMPLETED
+    if (ride.rideStatus !== "COMPLETED") {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Feedback allowed only after ride is completed"
+        );
+    }
+
+    // Save feedback
+    ride.riderFeedback = {
+        rating: feedbackInput.rating,
+        feedback: feedbackInput.feedback || "",
+    };
+
+    await ride.save();
+
+    return ride;
+};
+
+const giveDriverFeedback = async (
+    rideId: string,
+    driverId: string,
+    feedback: IDriverFeedback
+) => {
+    const ride = await RideModel.findById(rideId);
+
+    if (!ride) {
+        throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
+    }
+
+    if (!ride.driverId || ride.driverId.toString() !== driverId) {
+        throw new AppError(httpStatus.FORBIDDEN, "Not authorized to give feedback");
+    }
+
+    if (ride.rideStatus !== "COMPLETED") {
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            "Feedback allowed only after ride completion"
+        );
+    }
+
+    if (ride.riderFeedback) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Feedback already submitted");
+    }
+
+    ride.riderFeedback = {
+        rating: feedback.rating,
+        feedback: feedback.feedback,
+    };
+
+    await ride.save();
+    return ride;
+};
+
+const updateRideStatus = async (id: string, status: RideStatus) => {
+    const ride = await RideModel.findById(id);
+
+    if (!ride) {
+        throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
+    }
+
+    ride.rideStatus = status;
+
+    // Optionally update timestamps
+    if (status === "ACCEPTED") {
+        ride.timestamps.acceptedAt = new Date();
+    }
+
+    if (status === "COMPLETED") {
+        ride.timestamps.completedAt = new Date();
+
+        // ✅ Driver status update here
+        if (ride.driverId) {
+            // Update ridingStatus to "idle"
+            await Driver.findOneAndUpdate(
+                { userId: ride.driverId },
+                {
+                    ridingStatus: "idle",
+                    isOnRide: false,
+                }
+            );
+        }
+    }
+
+    await ride.save();
+
+    return ride;
+};
+
 export const RideService = {
     requestRide,
     cancelRide,
@@ -247,4 +387,9 @@ export const RideService = {
     completeRide,
     getDriverRides,
     getAllRides,
+    getDriverEarnings,
+    rejectRide,
+    giveDriverFeedback,
+    giveRiderFeedback,
+    updateRideStatus
 };

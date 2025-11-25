@@ -3,7 +3,7 @@
 import bcryptjs from "bcryptjs";
 import httpStatus from "http-status";
 import AppError from "../../errorHelper/ApiError";
-import { IAuthProvider, IUser, Role } from "./user.interface";
+import { IAuthProvider, IUser, Role, UserStatus } from "./user.interface";
 import { User } from "./user.model";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
@@ -76,8 +76,39 @@ const updateUser = async (
   return newUpdatedUser;
 };
 
+const getSingleUser = async (id: string) => {
+    const user = await User.findById(id).select("-password");
+    return {
+        data: user
+    }
+};
+const getMe = async (userId: string) => {
+    const user = await User.findById(userId).select("-password");
+    return {
+        data: user
+    }
+};
+
+const updateUserStatus = async (userId: string, status: UserStatus) => {
+  if (!Object.values(UserStatus).includes(status)) {
+    throw new  AppError(httpStatus.BAD_REQUEST, "Invalid user status value");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new  AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  user.status = status;
+  await user.save();
+  return user;
+};
+
 export const userServices = {
   createUser,
   getAllUsers,
   updateUser,
+  getSingleUser,
+  getMe,
+  updateUserStatus,
 };

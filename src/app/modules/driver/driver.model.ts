@@ -14,12 +14,11 @@ const DriverSchema = new Schema(
       type: {
         type: String,
         enum: ['Point'],
-        required: true,
         default: 'Point',
       },
       coordinates: {
         type: [Number, Number],
-        required: true,
+        default: [0, 0],
       },
     },
     onlineStatus: {
@@ -29,7 +28,7 @@ const DriverSchema = new Schema(
     },
     ridingStatus: {
       type: String,
-      enum: ['idle', 'waiting_for_pickup', 'in_transit', 'unavailable'],
+      enum: ["idle", 'waiting_for_pickup', 'in_transit', 'Complete', 'unavailable'],
       default: 'idle',
     },
     isOnRide: {

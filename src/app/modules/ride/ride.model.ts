@@ -38,6 +38,8 @@ const rideSchema = new Schema<IRide>(
       acceptedAt: { type: Date },
       completedAt: { type: Date },
     },
+    riderFeedback: { type: Schema.Types.ObjectId, ref: "User" },
+    driverFeedback: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
