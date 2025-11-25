@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { IDriver } from "./driver.interface";
 import ApiError from "../../errorHelper/ApiError";
+import { User } from "../user/user.model";
 
 const createDriver = async (payload: Partial<IDriver>) => {  
     const isDriverExist = await Driver.findOne({ userId: payload.userId });
@@ -31,6 +32,27 @@ const applyAsDriver = async (user: any, payload: IDriver) => {
 
   const newDriver = await Driver.create(driverData);
   return newDriver;
+};
+
+const suspendDriver = async (driverId: string) => {
+  const driver = await Driver.findById(driverId);
+
+  if (!driver) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+  }
+
+  if (driver.status === "Suspended") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Driver is already suspended");
+  }
+
+  // Update the driver status to 'Suspended'
+  driver.status = "Suspended";
+  await driver.save();
+
+  // Optional: Downgrade user role to 'USER'
+  await User.findByIdAndUpdate(driver.userId, { role: "USER" });
+
+  return driver;
 };
 
 const getAllDrivers = async (query: Record<string, string>) => {
@@ -145,6 +167,7 @@ const approveDriverStatus = async (
 export const DriverService = {
     createDriver,
     applyAsDriver,
+    suspendDriver,
     getAllDrivers,
     getSingleDriver,
     updateDriver,

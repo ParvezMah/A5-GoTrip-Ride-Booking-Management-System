@@ -11,18 +11,17 @@ router.get("/all-users",
   checkAuth(Role.ADMIN), 
   userControllers.getAllUsers
 );
+router.get("/me", checkAuth(...Object.values(Role)), userControllers.getMe)
 
 router.get("/:id",checkAuth(Role.ADMIN))
 
 
-router.post(
-  "/register",
+router.post("/register",
   validateRequest(createUserZodSchema),
   userControllers.createUser
 );
 
-router.patch(
-  "/:id",
+router.patch("/:id",
   validateRequest(updateUserZodSchema), // to validate data before update user information
   checkAuth(...Object.values(Role)), // Role based authenticated : every role can update user information
   userControllers.updateUser

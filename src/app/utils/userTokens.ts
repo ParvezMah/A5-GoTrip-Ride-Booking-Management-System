@@ -3,7 +3,7 @@ import { envVars } from "../config/env";
 import { IUser, UserStatus } from "../modules/user/user.interface";
 import { generateToken, verifyToken } from "./jwt";
 import { User } from "../modules/user/user.model";
-import AppError from "../errorHelper/ApiError";
+import ApiError from "../errorHelper/ApiError";
 import httpStatus from "http-status";
 
 export const createUserTokens = (user: Partial<IUser>) => {
@@ -28,14 +28,14 @@ export const createNewAccessTokenWithRefreshToken = async (refreshToken: string)
 
     const isUserExist = await User.findOne({ email: verifiedRefreshToken.email })
     if (!isUserExist) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User Does Not Exist")
+        throw new ApiError(httpStatus.BAD_REQUEST, "User Does Not Exist")
     }
 
     if (isUserExist.status === UserStatus.BLOCKED) {
-        throw new AppError(httpStatus.BAD_REQUEST, `User Is ${isUserExist.status}`)
+        throw new ApiError(httpStatus.BAD_REQUEST, `User Is ${isUserExist.status}`)
     }
     if (isUserExist.isDeleted) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User Is Deleted")
+        throw new ApiError(httpStatus.BAD_REQUEST, "User Is Deleted")
     }
     // generating access token 
     const jwtPayload = {

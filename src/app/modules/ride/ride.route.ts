@@ -9,7 +9,7 @@ const router = Router();
 
 // Admin gets all rides
 router.get("/",
-  checkAuth(Role.ADMIN),
+  checkAuth(Role.RIDER,Role.DRIVER,Role.ADMIN, Role.SUPER_ADMIN),
   RideControllers.getAllRides
 );
 
@@ -17,6 +17,12 @@ router.get("/",
 router.get("/me",
   checkAuth(Role.RIDER),
   RideControllers.getRiderRides
+);
+
+router.get(
+  "/earnings/me",
+  checkAuth(Role.DRIVER),
+  RideControllers.getDriverEarnings
 );
 
 // Driver views available rides to accept
@@ -51,6 +57,12 @@ router.patch("/:id/cancel",
 router.patch("/:id/accept",
   checkAuth(Role.DRIVER),
   RideControllers.acceptRide
+);
+
+router.patch(
+  "/:id/reject",
+  checkAuth(Role.DRIVER),
+  RideControllers.rejectRide
 );
 
 // Driver marks pickup complete

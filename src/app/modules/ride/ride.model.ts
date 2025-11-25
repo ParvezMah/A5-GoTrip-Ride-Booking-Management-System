@@ -3,9 +3,19 @@ import { IRide } from "./ride.interface";
 
 const locationSchema = new Schema(
   {
-    lat: { type: Number, required: true },
-    lng: { type: Number, required: true },
-    address: { type: String },
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true,
+      default: 'Point',
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true,
+    },
+    address: {
+      type: String,
+    },
   },
   { _id: false }
 );

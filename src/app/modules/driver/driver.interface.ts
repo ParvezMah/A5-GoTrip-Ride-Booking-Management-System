@@ -9,10 +9,10 @@ export interface IDriver {
     vehicleType: 'Bike' | 'Car';
   };
 
-  location?: {
-    lat: number;
-    lng: number;
-  };
+location?: {
+  type: 'Point';
+  coordinates: [number, number]; 
+};
 
   onlineStatus?: 'Active' | 'Offline';
   ridingStatus?: "idle" | 'waiting_for_pickup' | 'in_transit' | 'Complete';

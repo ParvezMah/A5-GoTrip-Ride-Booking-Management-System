@@ -1,10 +1,10 @@
 import { Types } from "mongoose";
 
-export type RideStatus = "REQUESTED" | "ACCEPTED" | "COMPLETED" | "CANCELLED" |"IN_TRANSIT"|"PICKED_UP";
+export type RideStatus = "REQUESTED" | "ACCEPTED" | "COMPLETED" | "CANCELLED" |"IN_TRANSIT"|"PICKED_UP"|"Rejected";
 
 export interface ILocation {
-  lat: number;
-  lng: number;
+  type: 'Point';
+  coordinates: [number, number]; // [lng, lat]
   address?: string;
 }
 

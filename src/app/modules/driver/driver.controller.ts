@@ -18,14 +18,33 @@ const createDriver = catchAsync(async (req: Request, res: Response, next: NextFu
 });
 
 const applyAsDriver = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const user = req.user as JwtPayload;
+    const user = req.user as JwtPayload;
 
-  const result = await DriverService.applyAsDriver(user, req.body);
+    const payload = {
+        ...req.body,
+        drivingLicense: req.file?.path,
+    }
+
+    console.log(payload)
+
+    const result = await DriverService.applyAsDriver(user, payload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Driver application submitted successfully",
+        data: result,
+    });
+});
+
+const suspendDriver = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await DriverService.suspendDriver(id);
 
   sendResponse(res, {
-    success: true,
     statusCode: httpStatus.OK,
-    message: "Driver application submitted successfully",
+    success: true,
+    message: 'Driver suspended successfully',
     data: result,
   });
 });
@@ -122,9 +141,7 @@ const updateRidingStatus = catchAsync(async (req: Request, res: Response, next: 
 // Update location
 const updateLocation = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const driverId = req.params.id;
-    const location = req.body.location; // expecting { lat: number, lng: number }
-
-    const updatedDriver = await DriverService.updateLocation(driverId, location);
+    const updatedDriver = await DriverService.updateLocation(driverId, req.body);
 
     sendResponse(res, {
         success: true,
@@ -135,17 +152,17 @@ const updateLocation = catchAsync(async (req: Request, res: Response, next: Next
 });
 
 const approveDriverStatus = catchAsync(async (req: Request, res: Response) => {
-  const driverId = req.params.id;
-  const { status } = req.body; // expecting: "Approved" | "Pending" | "Suspended"
+    const driverId = req.params.id;
+    const { status } = req.body; // expecting: "Approved" | "Pending" | "Suspended"
 
-  const updatedDriver = await DriverService.approveDriverStatus(driverId, status);
+    const updatedDriver = await DriverService.approveDriverStatus(driverId, status);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Driver status updated successfully",
-    data: updatedDriver,
-  });
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Driver status updated successfully",
+        data: updatedDriver,
+    });
 });
 
 
@@ -153,6 +170,7 @@ const approveDriverStatus = catchAsync(async (req: Request, res: Response) => {
 export const DriverControllers = {
     createDriver,
     applyAsDriver,
+    suspendDriver,
     getAllDrivers,
     getSingleDriver,
     updateDriver,

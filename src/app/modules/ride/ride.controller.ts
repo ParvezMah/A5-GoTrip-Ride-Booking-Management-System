@@ -15,7 +15,7 @@ const requestRide = catchAsync(async (req: Request, res: Response, next: NextFun
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
-    message: "Ride requested successfully",
+    message: "Ride requested and driver matched successfully",
     data: result,
   });
 });
@@ -23,8 +23,8 @@ const requestRide = catchAsync(async (req: Request, res: Response, next: NextFun
 const cancelRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
  const rider = req.user as JwtPayload;
   const riderId  = rider.userId 
-  const rideId = req.params.id;
-  const result = await RideService.cancelRide(riderId, rideId);
+  const ridesId = req.params.id;
+  const result = await RideService.cancelRide(riderId, ridesId);
 
   sendResponse(res, {
     success: true,
@@ -68,6 +68,21 @@ const acceptRide = catchAsync(async (req: Request, res: Response, next: NextFunc
     success: true,
     statusCode: httpStatus.OK,
     message: "Ride accepted successfully",
+    data: result,
+  });
+});
+
+const rejectRide = catchAsync(async (req: Request, res: Response) => {
+  const { id: rideId } = req.params;
+  const driver = req.user as JwtPayload;
+  const driverId = driver.userId;
+
+  const result = await RideService.rejectRide(rideId, driverId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Ride rejected successfully",
     data: result,
   });
 });
@@ -138,6 +153,22 @@ const getAllRides = catchAsync(async (_req: Request, res: Response, next: NextFu
   });
 });
 
+const getDriverEarnings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const driver = req.user as JwtPayload;
+    const driverId = driver.userId;
+
+    const result = await RideService.getDriverEarnings(driverId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Driver earnings retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const RideControllers = {
   requestRide,
   cancelRide,
@@ -149,4 +180,6 @@ export const RideControllers = {
   completeRide,
   getDriverRides,
   getAllRides,
+  getDriverEarnings,
+  rejectRide
 };
