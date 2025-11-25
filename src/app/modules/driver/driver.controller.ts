@@ -17,6 +17,19 @@ const createDriver = catchAsync(async (req: Request, res: Response, next: NextFu
     });
 });
 
+const applyAsDriver = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.user as JwtPayload;
+
+  const result = await DriverService.applyAsDriver(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Driver application submitted successfully",
+    data: result,
+  });
+});
+
 const getAllDrivers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query;
     const result = await DriverService.getAllDrivers(query as Record<string, string>);
@@ -121,11 +134,11 @@ const updateLocation = catchAsync(async (req: Request, res: Response, next: Next
     });
 });
 
-const updateDriverStatus = catchAsync(async (req: Request, res: Response) => {
+const approveDriverStatus = catchAsync(async (req: Request, res: Response) => {
   const driverId = req.params.id;
   const { status } = req.body; // expecting: "Approved" | "Pending" | "Suspended"
 
-  const updatedDriver = await DriverService.updateDriverStatus(driverId, status);
+  const updatedDriver = await DriverService.approveDriverStatus(driverId, status);
 
   sendResponse(res, {
     success: true,
@@ -139,6 +152,7 @@ const updateDriverStatus = catchAsync(async (req: Request, res: Response) => {
 
 export const DriverControllers = {
     createDriver,
+    applyAsDriver,
     getAllDrivers,
     getSingleDriver,
     updateDriver,
@@ -147,5 +161,5 @@ export const DriverControllers = {
     updateOnlineStatus,
     updateRidingStatus,
     updateLocation,
-    updateDriverStatus,
+    approveDriverStatus,
 };

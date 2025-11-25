@@ -14,6 +14,25 @@ const createDriver = async (payload: Partial<IDriver>) => {
     return driver;
 };
 
+const applyAsDriver = async (user: any, payload: IDriver) => {
+  // Check if user has already applied
+  const existing = await Driver.findOne({ userId: user.userId });
+  if (existing) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "You have already applied as a driver");
+  }
+
+  const driverData = {
+    ...payload,
+    userId: user.userId,
+    status: "Pending", // initially pending
+  };
+
+  // console.log(driverData)
+
+  const newDriver = await Driver.create(driverData);
+  return newDriver;
+};
+
 const getAllDrivers = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilder(Driver.find(), query);
     const driverData = queryBuilder.filter().search([]).sort().fields().paginate();
@@ -100,7 +119,7 @@ const updateLocation = async (driverId: string, location: { lat: number; lng: nu
     return driver;
 };
 
-const updateDriverStatus = async (
+const approveDriverStatus = async (
   driverId: string,
   status: 'Approved' | 'Pending' | 'Suspended'
 ) => {
@@ -125,6 +144,7 @@ const updateDriverStatus = async (
 
 export const DriverService = {
     createDriver,
+    applyAsDriver,
     getAllDrivers,
     getSingleDriver,
     updateDriver,
@@ -133,5 +153,5 @@ export const DriverService = {
     updateOnlineStatus,
     updateRidingStatus,
     updateLocation,
-    updateDriverStatus
+    approveDriverStatus
 };

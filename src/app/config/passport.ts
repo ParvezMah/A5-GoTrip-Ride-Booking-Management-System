@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { Role, UserStatus } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcryptjs from "bcryptjs";
 
@@ -16,6 +16,18 @@ passport.use(
 
             if (!isUserExist) {
                 return done("User does not exist")
+            }
+
+            if (!isUserExist.isVerified) {
+                return done(`User Is Not Verified`)
+            }
+
+            if (isUserExist && isUserExist.status === UserStatus.BLOCKED) {
+                return done(null, false, { message: `User is ${isUserExist.status}` });
+            }
+
+            if (isUserExist.isDeleted) {
+                return done(`User Is Deleted`)
             }
 
             const isGoogleAuthenticated = isUserExist.auths?.some(providerObjects => providerObjects.provider == "google")
@@ -48,15 +60,17 @@ passport.use(
 
             try {
                 const email = profile.emails?.[0].value;
-
                 if (!email) {
-                    return done(null, false, { mesaage: "No email found" })
+                    return done(null, false, { message: "No Email Found !" }) 
                 }
 
-                let user = await User.findOne({ email })
+                let isUserExist = await User.findOne({ email })
+                if (isUserExist && !isUserExist.isVerified) {
+                    return done(null, false, { message: "User is not verified" })
+                }
 
-                if (!user) {
-                    user = await User.create({
+                if (!isUserExist) {
+                    isUserExist = await User.create({
                         email,
                         name: profile.displayName,
                         picture: profile.photos?.[0].value,
@@ -71,7 +85,7 @@ passport.use(
                     })
                 }
 
-                return done(null, user)
+                return done(null, isUserExist)
 
 
             } catch (error) {

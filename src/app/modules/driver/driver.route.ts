@@ -13,10 +13,19 @@ const router = Router();
 router.post(
   "/create-driver",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  multerUpload.array("files"),
+  multerUpload.array("file"),
   validateRequest(createDriverZodSchema),
   DriverControllers.createDriver
 );
+
+router.post(
+  "/apply",
+  checkAuth(Role.RIDER),
+  multerUpload.array("files"),
+  validateRequest(createDriverZodSchema),
+  DriverControllers.applyAsDriver
+);
+
 
 // Get all drivers (admin, super admin) ✅
 router.get(
@@ -71,7 +80,7 @@ router.patch(
 router.patch(
   "/:id/approve-status",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  DriverControllers.updateDriverStatus
+  DriverControllers.approveDriverStatus
 );
 
 export const DriverRoutes = router;
